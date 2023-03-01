@@ -1,0 +1,29 @@
+<html>
+<head>
+    <title>Item Details</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+</head>
+<body>
+
+     <div class="fat-border">
+    <h1>{{ note.title }}</h1>
+    {{ note.comment }} <br>
+    {% if  note.body  %} {{ note.body }} {% endif %}<br>
+    Status:{{ note.status }}<br>
+    Start date: {{ note.start_date.strftime('%Y-%m-%d') }}<br>
+     </div>
+     <br>
+
+
+    {% for update in note.updates %}
+               <div class="fun-border">
+        <h2>{{update.title}}</h2>
+            <h4>{{update.body}}</h4>
+        <h4>{{update.status_change}}</h4>
+             </div><br>
+    {% endfor %}
+
+
+
+</body>
+</html>

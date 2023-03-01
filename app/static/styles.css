@@ -1,0 +1,27 @@
+h1 {
+    color: green;
+}
+
+
+ .fat-border {
+  padding: 10px;
+
+  display: block;
+  border: 6px solid green;
+   border-radius: 40px;
+  width: max-content;
+
+
+}
+
+ .fun-border {
+  padding-left: 10px;
+  padding-right: 10px;
+  display: block;
+  border: 2px solid green;
+  border-radius: 40px;
+  width: max-content;
+
+
+
+}
