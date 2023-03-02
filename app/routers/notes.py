@@ -11,7 +11,8 @@ from app.db.JWTexample import JWTBearer
 
 router = APIRouter(
     prefix="/av1/n",
-    tags=['api notes']
+    tags=['api notes'],
+    dependencies=[Depends(JWTBearer())]
 )
 
 
@@ -42,7 +43,7 @@ def a1_all_quited_notes():
     return r
 
 
-@router.post('/create_note', dependencies=[Depends(JWTBearer())])
+@router.post('/create_note')#, dependencies=[Depends(JWTBearer())])
 def a1_create_new_note(note: Task_create_model):
     r = create_task(note)
     return r

@@ -1,3 +1,5 @@
-*/database.db
-*pipfile*
-*/.idea
+.env
+**/database.db
+pipfile*
+/.idea
+*oldcode*

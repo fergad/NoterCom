@@ -1,8 +1,10 @@
 print("UsersCRUD begin")
 
 from sqlmodel import Session, select
-from app.db.Tables.TablesModels import engine, User
+from app.db.Tables.TablesModels import User
 from app.db.Tables.Schemas import Create_User, UserLoginSchema
+#from app.db.Tables.TablesModels import engine
+from app.db.Get_db_engine import engine
 
 
 

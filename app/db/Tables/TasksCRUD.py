@@ -6,8 +6,9 @@ from sqlmodel import Session, select, or_
 from fastapi import Depends
 
 
-from app.db.Tables.TablesModels import engine, Task, Update
+from app.db.Tables.TablesModels import Task, Update
 from app.db.Tables.Schemas import Task_create_model, Update_create
+from app.db.Get_db_engine import engine
 
 
 class TaskStatus:
