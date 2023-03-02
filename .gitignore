@@ -3,3 +3,4 @@
 pipfile*
 /.idea
 *oldcode*
+**__pycache__**
