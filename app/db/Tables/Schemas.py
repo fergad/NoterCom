@@ -1,24 +1,30 @@
-import datetime
 from typing import Optional, List
-from sqlmodel import  SQLModel
+from sqlmodel import SQLModel
 
-class Update_create(SQLModel):
+
+class UpdateCreate(SQLModel):
     title: str
     body: Optional[str]
     date: Optional[int]
-    status_change:str
+    status_change: str
     task_id: int
 
-class Task_create_model(SQLModel):
+class ReadUpdate(UpdateCreate):
+    pass
+
+
+class TaskCreate(SQLModel):
     title: str
     comment: str
     body: Optional[str]
 
-class Create_User(SQLModel):
+
+class CreateUser(SQLModel):
     name: str
     email: str
     password: str
     age: Optional[int] = None
+
 
 class UserLoginSchema(SQLModel):
     email: str#EmailStr
@@ -33,19 +39,21 @@ class UserLoginSchema(SQLModel):
         }
 
 
-class Read_user_list(SQLModel):
+class ReadUserList(SQLModel):
     name: str
     age: Optional[int] = None
 
 
-
+class ReadTaskWithUpdates(TaskCreate):
+    updates: List[ReadUpdate] = []
 
 ##############
-class Update_create_prepare(SQLModel):
+class UpdateCreatePrepare(SQLModel):
     title: str
     body: Optional[str]
     date: Optional[int]
-    status_change:str
+    status_change: str
+
 
 '''class Update_create_prepare(SQLModel):
     title: str

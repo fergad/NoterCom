@@ -2,13 +2,11 @@
 <head>
     <title>Item Details</title>
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+
 </head>
 <body>
     <h1>Look at my <ins>{{ notes[0].status }}</ins> notes:</h1>
-
-
     <table>
-
         {% for note in notes %}
             {% if  loop.index%2 ==1 %} <tr> {% endif %}
             <td><div class="fun-border">

@@ -20,8 +20,31 @@ h1 {
   display: block;
   border: 2px solid green;
   border-radius: 40px;
-  width: max-content;
+  /* width: max-content; */
+}
 
+.ul-navigation{
+     list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
 
+.ul-navigation li{
+  display: inline;
+  float: center;
 
 }
+
+.ul-navigation li a{
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.ul-navigation li a:hover {
+  background-color: #050;
+}
+

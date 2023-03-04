@@ -1,14 +1,19 @@
 from fastapi import Depends, Request, Form, status, APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from sqlmodel import Session, select
+from fastapi import HTTPException
+from app.db.Get_db_engine import get_db
+
 from app.settings import templates_dir
 
-from db.Tables.TasksCRUD import get_task_by_id, get_tasks_by_status, TaskStatus, create_task
-from db.Tables.Schemas import Task_create_model
+from db.Tables.TasksCRUD import get_task_by_id, get_tasks_by_status, TaskStatus, create_task, get_all_quited
+from db.Tables.Schemas import TaskCreate, ReadTaskWithUpdates
 
 from fastapi.templating import Jinja2Templates
 from datetime import datetime
-
+from app.routers.notes import a1_get_opened_notes
+from app.db.Tables.TablesModels import Task
 
 
 templates = Jinja2Templates(templates_dir)
@@ -32,36 +37,45 @@ def add_new_note(request: Request):
 
 
 @router.post("/add", response_class=RedirectResponse)
-def add_note(request: Request, title: str = Form(...), comment: str = Form(...), body: str = Form(...)):#, db = Depends(get_db)):#, db = Depends(get_db)):
+def add_note(request: Request, title: str = Form(...), comment: str = Form(...), body: str = Form(...), db = Depends(get_db)):#, db = Depends(get_db)):
     #print(form.__dict__)
-    n = Task_create_model(title=title, comment=comment, body=body)
-    created_id=create_task(n)
-    return RedirectResponse(f'http://127.0.0.1:8000/notes/i/{created_id}', status_code=status.HTTP_303_SEE_OTHER)
+    #n = TaskCreate(title=title, comment=comment, body=body)
+    #created_id=create_task(n)
+    n = Task(title=title, comment=comment, body=body)
+    db.add(n)
+    db.commit()
+    db.refresh(n)
+    return RedirectResponse(f'http://127.0.0.1:8000/notes/i/{n.id}', status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/i/{id}", response_class=HTMLResponse, name='note_by_id',)  # , dependencies=[Depends(JWTBearer())]
-def show_note_by_id(request: Request, id: int):
-    note = get_task_by_id(id=id)
-    if note:
-        task = note[0]
-        updates=note[1]
-        return templates.TemplateResponse("note_by_id.html", {"request": request, "note": task, "updates":updates})
+@router.get("/i/{id}", response_class=HTMLResponse, name='note_by_id', response_model=ReadTaskWithUpdates)  # , dependencies=[Depends(JWTBearer())]
+def show_note_by_id(request: Request, id: int, db = Depends(get_db)):
+    statement = select(Task).where(Task.id == id)
+    r = db.exec(statement).first()
+    if not r:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return templates.TemplateResponse("note_by_id.html", {"request": request, "note": r})
 
 
 @router.get("/b", response_class=HTMLResponse)  # , dependencies=[Depends(JWTBearer())]
-def notes_for_pick(request: Request):
-    notes = get_tasks_by_status(TaskStatus.created)
-    #change url_for_notes in return;
-    return templates.TemplateResponse("notes_show_category.html", {"request": request, "notes": notes, "url_for_notes":server_url+"i/"})
+def notes_for_pick(request: Request, db:Session = Depends(get_db)):
+    notes = get_tasks_by_status(db, TaskStatus.created)
+    #notes=a1_get_opened_notes(db=db)
+    return templates.TemplateResponse("notes_show_category_simple_version.html", {"request": request, "notes": notes, "url_for_notes":server_url+"i/"})
 
 
 @router.get("/w", response_class=HTMLResponse)  # , dependencies=[Depends(JWTBearer())]
-def notes_in_work(request: Request):
-    notes = get_tasks_by_status(status=TaskStatus.in_work)
-    return templates.TemplateResponse("notes_show_category.html", {"request": request, "notes": notes,"url_for_notes":server_url+"i/"})
+def notes_in_work(request: Request, db:Session = Depends(get_db)):
+    notes = get_tasks_by_status(db, status=TaskStatus.in_work)
+    return templates.TemplateResponse("notes_show_category_simple_version.html", {"request": request, "notes": notes,"url_for_notes":server_url+"i/"})
 
 
 @router.get("/e", response_class=HTMLResponse)  # , dependencies=[Depends(JWTBearer())]
-def notes_closed(request: Request):
-    notes = get_tasks_by_status(status=TaskStatus.done)
-    return templates.TemplateResponse("notes_show_category.html", {"request": request, "notes": notes,"url_for_notes":server_url+"i/"})
+def notes_closed(request: Request, db:Session = Depends(get_db)):
+    notes = get_tasks_by_status(db, status=TaskStatus.done)
+    return templates.TemplateResponse("notes_show_category_simple_version.html", {"request": request, "notes": notes,"url_for_notes":server_url+"i/"})
+
+@router.get("/q", response_class=HTMLResponse)  # , dependencies=[Depends(JWTBearer())]
+def notes_closed(request: Request, db:Session = Depends(get_db)):
+    notes = get_all_quited(db)
+    return templates.TemplateResponse("notes_show_category_simple_version.html", {"request": request, "notes": notes,"url_for_notes":server_url+"i/"})

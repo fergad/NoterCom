@@ -1,8 +1,6 @@
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship, create_engine
 from datetime import datetime
-from settings import databse_dir
-from app.db.Get_db_engine import engine
 
 
 class Update(SQLModel, table=True):
@@ -22,7 +20,7 @@ class Task(SQLModel, table=True):
     comment: str
     body: Optional[str]
     start_date: datetime = Field(default_factory=datetime.now)
-    #  not task_id, but question
+
     updates: List['Update'] = Relationship(back_populates='question')
     status: str = Field(default="Created")
 

@@ -1,0 +1,34 @@
+<html>
+<head>
+    <title>Item Details</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+
+    <ul class="ul-navigation">
+    <li><a href="b">Opened</a></li>
+    <li><a href="w">In work</a></li>
+    <li><a href="e">Ended</a></li>
+    <li><a href="q">Quited</a></li>
+    <li><a href="add">Add task</a></li>
+
+
+
+    </ul>
+</head>
+<body>
+    <h1>Look at my <ins>{{ notes[0].status }}</ins> notes:</h1>
+
+        {% for note in notes %}
+            <div class="fun-border">
+                <h1><a href="{{url_for_notes+note.id|string}}">{{ note.title }}</a></h1> <!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Author: -->
+                <h2>{{ note.comment }}</h2>
+                <h2>{{ note.body }}</h2>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{note.start_date.strftime("%d.%m.%y")}}
+            </div>
+    <br>
+        {% endfor %}
+
+
+
+
+</body>
+</html>

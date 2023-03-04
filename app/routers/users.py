@@ -1,6 +1,6 @@
 from db.JWTexample import JWTBearer
 from fastapi import APIRouter, Body
-from app.db.Tables.Schemas import Create_User, Read_user_list, UserLoginSchema
+from app.db.Tables.Schemas import CreateUser, ReadUserList, UserLoginSchema
 from app.db.Tables.UsersCRUD import create_user, get_users, check_user
 from typing import List
 from app.db.JWTexample import JWTBearer
@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-@router.get("/list", response_model=List[Read_user_list])
+@router.get("/list", response_model=List[ReadUserList])
 def get_users_list():
     return get_users()
 
@@ -30,7 +30,7 @@ def create_user(user: UserSchema = Body(...)):
 """
 
 @router.post("/signup")
-def create_user_m(user: Create_User):
+def create_user_m(user: CreateUser):
     create_user(user)
     return JWTBearer.signJWT(user.email)
 

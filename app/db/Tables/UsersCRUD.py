@@ -2,42 +2,43 @@ print("UsersCRUD begin")
 
 from sqlmodel import Session, select
 from app.db.Tables.TablesModels import User
-from app.db.Tables.Schemas import Create_User, UserLoginSchema
-#from app.db.Tables.TablesModels import engine
-from app.db.Get_db_engine import engine
+from app.db.Tables.Schemas import CreateUser, UserLoginSchema
 
 
-
-def create_user(user: Create_User):
-    with Session(engine) as session:
-        session.add(User(**user.dict()))
-        session.commit()
-        return
+from fastapi import HTTPException
 
 
-def delete_user(user_id: int):
-    db = Session(engine)
+def create_user(user: CreateUser, db: Session):
+    new_user = User.from_orm(user)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+def get_users(db: Session):
+    elem = User
+    statement = select(elem)  #.where(User.name == "Spider-Boy")
+    result = db.exec(statement).all()
+    if not result:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return result
+
+
+def delete_user(user_id: int, db: Session):
     target_user = db.query(User).filter(User.id == user_id).first()
     if not target_user:
-        return -1
-
+        raise HTTPException(status_code=404, detail="Item not found")
     target_user.delete(synchronize_session=False)
     db.commit()
-    return 1
+    return target_user
 
 
-def get_users():
-    elem = User
-    with Session(engine) as session:
-        statement = select(elem)  #.where(User.name == "Spider-Boy")
-        return session.exec(statement).all()
+def check_user(visitor: UserLoginSchema, db: Session):
+    statement = select(User).where(User.email == visitor.email)
+    result = db.exec(statement).first()
+    if result.password == visitor.password:
+        return True
+    else:
+        return False
 
-
-def check_user(visiter: UserLoginSchema):
-    with Session(engine) as session:
-        statement = select(User).where(User.email == visiter.email)
-        result = session.exec(statement).first()
-        if result.password == visiter.password:
-            return True
-        else:
-            return False
