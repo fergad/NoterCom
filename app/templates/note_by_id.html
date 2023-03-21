@@ -1,31 +1,44 @@
-<html>
-<head>
-    <title>Item Details</title>
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-
-
-</head>
-<body>
-
+{% extends "BaseTemplate.html" %}
+{% block content %}
+<br>
      <div class="fat-border">
-    <h1>{{ note.title }}</h1>
-    {{ note.comment }} <br>
-    {% if  note.body  %} {{ note.body }} {% endif %}<br>
-    Status:{{ note.status }}<br>
-    Start date: {{ note.start_date.strftime('%Y-%m-%d') }}<br>
+        <h1>{{ note.title }}&nbsp;&nbsp;</h1>
+         <h2>{% if  note.body  %} {{ note.body }} {% endif %}</h2>
+         <br>
+
+         Задача
+         {% if note.status=="Created" %}Создана
+         {% elif note.status=="in work" %}В работе
+         {% elif note.status=="Done" %}Завершена
+         {% elif note.status=="Canceled" %}Прервана
+         {% else %} note.status {% endif %}
+         [ {{ note.author }}]
+         <br>
+    Начата: {{ note.start_date.strftime("%d.%m.%y %H:%M") }}<br>
      </div>
      <br>
+    <div class="fat-border", align="center">
+        <h1><a href ="{{url_for('ui_get_create_update_form')+"?task_id="+note.id|string}}">Добавить обновление</a></h1>
 
+    </div>
+<br>
 
     {% for update in note.updates %}
-               <div class="fun-border">
-        <h2>{{update.title}}</h2>
-            <h4>{{update.body}}</h4>
-        <h4>{{update.status_change}}</h4>
-             </div><br>
+
+        <h2>{{update.title}}&nbsp;&nbsp;</h2>
+            <h2>{{update.body}}</h2>
+        <h4>    Статус:
+         {% if update.status_change=="Created" %}Создана
+         {% elif update.status_change=="in work" %}В работе
+         {% elif update.status_change=="Done" %}Завершена
+         {% elif update.status_change=="Canceled" %}Прервана
+         {% else %} {{ update.status_change }} {% endif %}
+            ({{ update.author }})
+         </h4>
+
+
+                   <h4>{{update.date.strftime("%d.%m.%y %H:%M")}}</h4>
+            <hr/>
     {% endfor %}
 
-
-
-</body>
-</html>
+{% endblock %}

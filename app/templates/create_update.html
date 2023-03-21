@@ -1,0 +1,36 @@
+{% extends "BaseTemplate.html" %}
+{% block content %}
+<div class="form-create-note-container">
+    <form action={{ request.url}} method="post">
+        {% if task_id %}
+              <input type="hidden" id="task_id" name="task_id" value="{{task_id}}"><br>
+        {% else %}
+            <label for="task_id">Input task_id:</label><br>
+            <input type="text" id="task_id" name="task_id" value=""><br><br>
+        {% endif %}
+
+
+        <input required class="input-pararm" type="text" id="title" name="title" placeholder="Заголовок обновления"><br>
+
+
+         <textarea required class="input-pararm" id="body" name="body" rows="4" cols="50" placeholder="Тело обновления"></textarea>
+    <br><br><br><br>
+
+
+          <label class="radio">В работе
+        <input class="radio" type="radio" id="choice1" name="new_status" value="in work" checked></label>
+
+          <label class="radio">Готово
+          <input class="radio" type="radio" id="choice2" name="new_status" value="Done"></label>
+
+          <label class="radio">Заброшено
+          <input class="radio" type="radio" id="choice3" name="new_status" value="Abandon"></label>
+
+        <br><br><br><br>
+
+
+
+         <button class="btn" type="submit" value="Submit">Добавить продвижение</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+
+    <title>Title</title>
+
+    <ul class="ul-navigation">
+    <li><a href="{{request.host}}/notes/b">Новые</a></li>
+    <li><a href="{{request.host}}/notes/w">В работе</a></li>
+    <li><a href="{{request.host}}/notes/e">Закрытые</a></li>
+    <!-- <li><a href="q">Quited</a></li>-->
+    <li><a href="{{request.host}}/notes/add">&nbsp;&nbsp;+&nbsp;&nbsp;</a></li>
+    </ul>
+
+</head>
+<body>
+
+{% block content %}
+{% endblock %}
+</body>
+</html>

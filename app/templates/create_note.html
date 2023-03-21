@@ -1,20 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create note</title>
 
-</head>
-<body>
-<h1>Here will be form</h1>
+
+{% extends "BaseTemplate.html" %}
+{% block content %}
+<div class="form-create-note-container">
     <form action={{ send_data_to}} method="post">
-      <label for="title">Task title:</label><br>
-      <input type="text" id="title" name="title" value="Play CM like pro"><br>
-      <label for="comment">Comment:</label><br>
-      <input type="text" id="comment" name="comment" value="Forst demon"><br>
-      <label for="body">Body:</label><br>
-      <input type="text" id="body" name="body" value="little"><br><br>
-      <input type="submit" value="Submit">
+
+      <input required class="input-pararm" type="text" id="title" name="title" placeholder="Заголовок"><br>
+
+      <textarea required class="input-pararm" id="body" name="body" rows="4" cols="50" placeholder="Задача"></textarea><br>
+
+        <button required class="btn" type="submit" value="Submit">Добавить задачу</button>
+
     </form>
-</body>
-</html>
+    </div>
+{% endblock %}

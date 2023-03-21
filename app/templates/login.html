@@ -1,0 +1,15 @@
+
+{% extends "BaseTemplate.html" %}
+{% block content %}
+<div class="form-create-note-container">
+    <form action={{ send_data_to}} method="post">
+
+      <input class="input-pararm" type="text" id="login" name="login" placeholder="Логин (e-mail)"><br>
+
+      <input class="input-pararm" type="secret" id="password" name="password" placeholder="Пароль"></input><br>
+
+        <button class="btn" type="submit" value="Submit">Войти!</button>
+
+    </form>
+    </div>
+{% endblock %}

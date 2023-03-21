@@ -6,9 +6,12 @@ databse_dir=str(BASE_PATH / 'db' / "database.db")
 templates_dir = str(BASE_PATH / "templates")
 static_dir = str(BASE_PATH / "static")
 #templates = Jinja2Templates(directory=str(BASE_PATH.parent / "templates"))
+addr="http://192.168.1.78"
+host_port = "8000"
+host_addr =addr+":"+host_port
 
-
-
+ACCESS_TOKEN_EXPIRE_MINUTES = 1#60*24*7
+ALGORITHM = "HS256"
 
 
 

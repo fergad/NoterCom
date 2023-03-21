@@ -1,40 +1,117 @@
+
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 
 #from app.db.Tables.TasksCRUD import create_update
 #from app.db.Tables.TasksCRUD import create_multiply_tasks, create_task, create_multiply_updates, get_task_by_id, \
 #    get_tasks_by_status, TaskStatus, get_all_quited
-from app.db.Get_db_engine import get_db
-from app.db.Tables.TasksCRUD import get_tasks_by_status, TaskStatus
+#from app.db.Tables.TasksCRUD import get_tasks_by_status, TaskStatus
 
-from app.db.Tables.Schemas import UpdateCreate, TaskCreate, ReadTaskWithUpdates
-from app.db.Tables.TablesModels import Task
-from app.db.JWTexample import JWTBearer
+#from app.db.AuthHttpBasic import get_current_username
+
+from app.db.Get_db_engine import get_db
+from app.db.Schemas import UpdateCreate, TaskCreate, TaskRead, TaskReadWithUpdates, TaskStatus, UpdateRead
+from app.db.TablesModels import Task, Update
+
+
+from fastapi import Cookie
+from app.db.AuthJWT import oauth2_scheme, get_auth_from_token_no_validation
+from app.db.UsersCRUD import is_user_ok#, get_author_no_security_check
 
 router = APIRouter(
-    prefix="/av1/n",
+    prefix="/api/v1/n",
     tags=['api notes'],
-    #dependencies=[Depends(JWTBearer())],
-
+    #dependencies=[Depends(get_current_username)],#AuthHttpBasc
+    #dependencies=[Depends(get_data_from_token)]
+    #dependencies=[Depends(get_from_cookie_token)]
+    dependencies=[Depends(is_user_ok)]
   )
-'''
-@router.get('/id/{id}')
-def a1_get_note_by_id_with_updates(id: int, db: Session = Depends(get_db)):
-    r = get_task_by_id(id, db=db, updates=True)
-    return {'note': r[0], 'updates': r[1]}
-'''
-@router.get('/id/{id}', response_model=ReadTaskWithUpdates)
-def a1_get_note_by_id_with_updates(id: int, db: Session = Depends(get_db)):
-        statement = select(Task).where(Task.id == id)
-        r = db.exec(statement).first()
-        if not r:
-            raise HTTPException(status_code=404, detail="Item not found")
+
+
+
+@router.post('/create_note')#, response_model=TaskRead)  # , dependencies=[Depends(JWTBearer())])
+def api_create_new_note(note: TaskCreate,
+                         access_token = Cookie(default=None, include_in_schema=False),
+                        auth: str | None = None,
+                         db: Session = Depends(get_db)): #auth = Depends(JWTBearer())):
+    if auth is None:
+        if access_token:
+            auth = get_auth_from_token_no_validation(access_token)
+        else: raise HTTPException(status_code=404, detai='No author info provided')
+
+    r = Task.from_orm(note)  # , start_date=datetime.now())
+    r.author = auth
+
+    #print(JWTBearer.decodeJWT(auth))
+    #r.author = JWTBearer.decodeJWT(auth)['user_id']
+    db.add(r)
+    db.commit()
+    db.refresh(r)
+    print('r from api_create_new_note= ', r)
+    if r:
         return r
+    else:
+        raise HTTPException(status_code=404, detail="Item not found")
 
 
-@router.get('/bank')
-def a1_get_opened_notes(db: Session = Depends(get_db)):
+
+
+
+
+@router.post('/create_update/', response_model=UpdateRead)  # , dependencies=[Depends(JWTBearer())])
+def api_create_update(update: UpdateCreate, access_token=Cookie(default=None, include_in_schema=False),
+                      auth : str|None = None,
+                      task_id: int | None = None, db: Session = Depends(get_db)):
+    if auth is None:
+        if access_token:
+            auth = get_auth_from_token_no_validation(access_token)
+        else : raise HTTPException(status_code=404, detai='No author info provided')
+
+    if not update.task_id:
+        if task_id:
+            update.task_id=task_id
+        else:
+            raise HTTPException(status_code=404, detail="No no no task id")
+
+    u = Update.from_orm(update)  # , start_date=datetime.now())
+    print("u for now: ", u)
+    t = db.exec(select(Task).where(Task.id==u.task_id)).first()
+    u.author = auth
+    if t.executor:
+        if auth not in t.executor:
+            t.executor += auth
+    else:
+        t.executor=auth
+    print("Task: ", t)
+    print("Update: ", u)
+
+    if not t:
+        raise HTTPException(status_code=404, detail="Item not found")
+    t.status = u.status_change
+    print("WE ARE HERE AND NO PROBLEMS")
+    db.add(t)
+    db.add(u)
+    print(" t and u added AND NO PROBLEMS")
+    db.commit()
+    return u
+
+
+
+@router.get('/id/{id}', response_model=TaskReadWithUpdates)
+def api_get_note_by_id_with_updates(id: int, db: Session = Depends(get_db)):
+    statement = select(Task).where(Task.id == id)
+    r = db.exec(statement).first()
+    if not r:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return r
+
+
+@router.get('/bank', response_model=List[TaskRead], status_code=200)
+def api_get_opened_notes(db: Session = Depends(get_db)):
+    print("and now try to get notes_bank")
     r = get_tasks_by_status(db=db, status=TaskStatus.created)
+    print("r",r)
     if r:
         return r
     else:
@@ -42,7 +119,7 @@ def a1_get_opened_notes(db: Session = Depends(get_db)):
 
 
 @router.get('/inwork')
-def a1_get_opened_notes(db: Session = Depends(get_db)):
+def api_get_inwork_notes(db: Session = Depends(get_db)):
     r = get_tasks_by_status(db=db, status=TaskStatus.in_work)
     if r:
         return r
@@ -51,7 +128,7 @@ def a1_get_opened_notes(db: Session = Depends(get_db)):
 
 
 @router.get('/done')
-def a1_get_opened_notes(db: Session = Depends(get_db)):
+def api_get_done_notes(db: Session = Depends(get_db)):
     r = get_tasks_by_status(db=db, status=TaskStatus.done)
     if r:
         return r
@@ -60,57 +137,51 @@ def a1_get_opened_notes(db: Session = Depends(get_db)):
 
 
 @router.get('/quited')
-def a1_all_quited_notes(db: Session = Depends(get_db)):
-    r = get_tasks_by_status(db=db, status=TaskStatus.quit_status_list())
+def api_all_quited_notes(db: Session = Depends(get_db)):
+    r = get_all_quited(db=db, status=TaskStatus.quit_status_list())
     if r:
         return r
     else:
         raise HTTPException(status_code=404, detail="Item not found")
 
-@router.post('/create_note')  # , dependencies=[Depends(JWTBearer())])
-def a1_create_new_note(note: TaskCreate, db: Session = Depends(get_db)):
-    r = Task(note.from_orm())  # , start_date=datetime.now())
-    db.add(r)
-    db.commit()
-    if r:
+
+def get_tasks_by_status(db: Session = Depends(get_db), status=TaskStatus.created):
+    print(db)
+    r = db.exec(select(Task).where(Task.status == status)).all()
+    return r
+
+
+def get_all_quited(db: Session = Depends(get_db)):
+    try:
+        r = db.exec(select(Task).where(or_(*[Task.status == s for s in TaskStatus.quit_status_list()]))).all()
         return r
-    else:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-@router.post("/fill-notes")
-def api_fill_notes(db: Session = Depends(get_db)):
-    tasks = [TaskCreate(title="First testing record", comment='put it first', body='just for testing'),
-             TaskCreate(title="Do the dishes", comment='today', body='if it had to be me, i will be very angry'),
-             TaskCreate(title="Do homework", comment='becouse i have to', body='i will do it by myself'),
-             TaskCreate(title="Wash the car", comment='until 2024', body='car should be clean'),
-             TaskCreate(**{
-                 "title": "One more quest for my heroes",
-                 "comment": "Who are my heroes?",
-                 "status": "Opened",
-                 # "id": 5,
-                 "body": "If no one comes, then i come to you"
-             }), TaskCreate(title="Get salary", comment='need to find nearest bank', body='not tinkoff'),
-             TaskCreate(title="FastAPI Lesson", comment='Ill be bisy at wendsday',
-                        body='will learn something new!'),
-             TaskCreate(title="Take bottles to woodhouse", comment='its getting warmer',
-                        body='may be take someone with me?'),
-             TaskCreate(title="Check check engine light", comment='really need cable to look up for errors',
-                        body='')]
-
-    for t in tasks:
-        db.add(t)
-
-    upds = [UpdateCreate(title='No need to do it', body='even I have what to do ', status_change='closed', task_id=1),
-            UpdateCreate(title='I will do it', body='It pleasure to help you', status_change='in work', task_id=1),
-            UpdateCreate(title='There are too many!!!', body='Save good memory!!!!', status_change='in work',
-                         task_id=2),
-            UpdateCreate(title='Already done', body="Was not too hard", status_change='Done', task_id=3)]
+    except Exception as err:
+        print(err)
+        return err
 
 
-    for u in upds:
-        db.add(u)
 
+@router.post("/fill-light")
+def api_fill_lite(db: Session = Depends(get_db)):
+
+    t1 = Task(title="Помыть посуду", body='посуда в раковине', author="Leslie")
+    db.add(t1)
+    t2 = Task(title="Съесть пироженые", body='Они могут испортится!', author="Freeze")
+    t2.updates.append(Update(title='Принялся за дело', body='Их очень много, не смогу справится за раз. Съел 3 из 5',
+                             status_change=TaskStatus.in_work, author="Freeze"))
+    t2.status = t2.updates[-1].status_change
+    t2.executor = 'Freeze'
+    db.add(t2)
+    t3 = Task(title="Заварить чаю", body='Кончилась заварка', author="Awesome")
+    t3.updates.append(Update(title='Заварила новую', body='Ричард, от ОА',
+                             status_change=TaskStatus.done, author="Leslie"))
+    t3.status = t3.updates[-1].status_change
+    t3.executor = "Leslie"
+    db.add(t3)
     db.commit()
+    db.refresh(t1)
+    db.refresh(t2)
+    db.refresh(t3)
+    return t1,t2,t3
 
 
-    return {"result": "ok"}

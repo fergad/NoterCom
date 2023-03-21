@@ -1,34 +1,23 @@
-<html>
-<head>
-    <title>Item Details</title>
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-
-    <ul class="ul-navigation">
-    <li><a href="b">Opened</a></li>
-    <li><a href="w">In work</a></li>
-    <li><a href="e">Ended</a></li>
-    <li><a href="q">Quited</a></li>
-    <li><a href="add">Add task</a></li>
-
-
-
-    </ul>
-</head>
-<body>
-    <h1>Look at my <ins>{{ notes[0].status }}</ins> notes:</h1>
-
+{% extends "BaseTemplate.html" %}
+{% block content %}
         {% for note in notes %}
+<!--
             <div class="fun-border">
-                <h1><a href="{{url_for_notes+note.id|string}}">{{ note.title }}</a></h1> <!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Author: -->
-                <h2>{{ note.comment }}</h2>
+
+
+                <a class="fill-div" href="{{url_for_notes+note.id|string}}">
+                    <h1>{{loop.index}}.&nbsp;{{ note.title }}&nbsp;[{{note.author}}{% if note.executor %} ⟶ {{note.executor}}{% endif %}]</h1><!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Author: ->
                 <h2>{{ note.body }}</h2>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{note.start_date.strftime("%d.%m.%y")}}
+                <!-{{note.start_date.strftime("%d.%m.%y %H:%M")}}   ->
+                </a>
             </div>
-    <br>
+-->
+
+
+     <h1>{{loop.index}}.&nbsp;<a href="{{url_for_notes+note.id|string}}">{{ note.title }}</a></h1>
+    <h4>{{note.start_date.strftime("%d.%m.%y %H:%M")}} : {{note.author}}</h4>
+     <hr/>
+
         {% endfor %}
 
-
-
-
-</body>
-</html>
+{% endblock %}
